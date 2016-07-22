@@ -14,7 +14,7 @@ class GUI:
 
     def fnCreateWidgets(self):
         # set background color
-        bg = '#ccccff'
+        bg = '#b3c9d1'
         #set the default image for the display
         self.blank = PhotoImage(file = 'blank.gif')
         # set the font for the whole GUI
@@ -29,23 +29,28 @@ class GUI:
         # create the frame
         self.frWindow = Frame(height=400, width=500, bg=bg)
         self.frWindow.pack(fill=BOTH, expand=1)
+        
 
         #menu bar
-        #self.menubar = Menu(self)
-        #menu = Menu(self.menubar, tearoff=0)
-        #self.menubar.add_cascade(label="Labyrinth", menu=menu)
-        #menu.add_command(label="Return")
-        #menu.add_command(label="Quit")
+        
+        menubar = Menu(wdBaseWindow)
+        menubar.add_command(label="File")
+        menubar.add_command(label="Quit", command=wdBaseWindow.quit())
 
-        # show the menubar
-        #self.master.config(menu=self.menubar)
+        wdBaseWindow.config(menu=menubar)
 
         # blank labels for spacing
         self.lbl1 = Label(self.frWindow, bg = bg)
         self.lbl1.grid(row =0)
 
+        self.lbl1 = Label(self.frWindow, bg = bg)
+        self.lbl1.grid(row =6)
+
         self.lbl2 = Label(self.frWindow, width = 2, bg =bg)
         self.lbl2.grid(column = 0)
+
+        self.lbl3 = Label(self.frWindow, width = 2, bg =bg)
+        self.lbl3.grid(column = 1)
 
         # label, will display the Sphero runtime
         self.lblTimeElapsed = Label(self.frWindow, text = 'Time:')
@@ -53,11 +58,11 @@ class GUI:
 
         # button, starts the run
         self.btnStart = Button(self.frWindow, text="Start", font=(font,16))
-        self.btnStart.grid(row=6, column=1)
+        self.btnStart.grid(row=7, column=2)
 
         # button, stops the run completely - NOT pause
         self.btnStop = Button(self.frWindow, text="Stop", font=(font,16))
-        self.btnStop.grid(row=7, column=1)
+        self.btnStop.grid(row=7, column=7)
 
         """DISPLAY Grid Arrangement:
         4x6
@@ -91,7 +96,7 @@ class GUI:
             self.lstDisplayLBLNames.append(name)
 
             # the list is used to create a set of labels
-            self.lstDisplayLBLNames[each] = Label(self.frWindow, image=self.blank, width=80, height=80, relief=SUNKEN)
+            self.lstDisplayLBLNames[each] = Label(self.frWindow, image=self.blank, width=90, height=90, relief=SUNKEN)
 
             # every second column has x direction padding to easily see which sector the Sphero is located in
             if (int(name[-1]) + 1)  % 2 == 0:
