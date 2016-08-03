@@ -68,11 +68,11 @@ class GUI:
 
         # button, starts the run
         self.btnStart = Button(self.frWindow, text="Start", command =self.fnStart,font=(font,16))
-        self.btnStart.grid(row=10, column=3, pady = (30,0))
+        self.btnStart.grid(row=10, column=3,columnspan=2, pady = (10,0))
 
         # button, stops the run completely - NOT pause
         self.btnStop = Button(self.frWindow, text="Stop", font=(font,16))
-        self.btnStop.grid(row=10, column=10, pady = (30,0))
+        self.btnStop.grid(row=10, column=10, columnspan =2, pady = (10,0))
 
         """DISPLAY Grid Arrangement:
         4x6
@@ -115,15 +115,16 @@ class GUI:
             print name
 
             # the list is used to create a set of labels
-            lstDisplayLBLNames[each] = Label(self.frWindow,image = self.blank, width=47, height=47, relief=SUNKEN)
+            lstDisplayLBLNames[each] = Label(self.frWindow,image = self.blank, width=47, height=47, relief = SUNKEN)
 
             # a length checker is necessary as labels in the 12th row are have 3 digits in their name
+            # a length checker is necessary as labels in the 12th row are have 3 digits in their name
             if len(name) == 6:
-                lstDisplayLBLNames[each].grid(row = int(name[-2]) + 2, column= int(name[-1]) + 2, padx=(2,2), pady=(2,2))
+                lstDisplayLBLNames[each].grid(row=int(name[-2]) + 2, column=int(name[-1]) + 2, padx=(1, 1), pady=(1, 1))
                 if int(name[-1]) == 0:
-                    lstDisplayLBLNames[each].grid(row=int(name[-2]) + 2, column=int(name[-1]) + 2, padx=(25, 2), pady=(2,2))
+                    lstDisplayLBLNames[each].grid(row=int(name[-2]) + 2, column=int(name[-1]) + 2, padx=(25, 1), pady=(1, 1))
             else:
-                lstDisplayLBLNames[each].grid(row = int(name[-3]) + 2, column = int(name[-1]) + 12,padx=(2,2), pady=(2,2))
+                lstDisplayLBLNames[each].grid(row=int(name[-3]) + 2, column=int(name[-1]) + 12, padx=(1, 1), pady=(1, 1))
 
 
 
@@ -144,7 +145,10 @@ class GUI:
         now = time.time()
         time_elapsed = now - start
         self.lblTimeElapsed.config(text=round(time_elapsed,2))
-        wdBaseWindow.after(1000, self.fnTimeElapsed)
+
+        wdBaseWindow.update()
+
+        
 
     def fnStart(self):
         # call the sphero start command in the functions file
@@ -152,8 +156,8 @@ class GUI:
 
         start = time.time()
         global start
-        self.fnTimeElapsed()
-
+        wdBaseWindow.after(1000, self.fnTimeElapsed)
+        
 
 
 wdBaseWindow = Tk()
