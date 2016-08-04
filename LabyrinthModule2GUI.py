@@ -5,11 +5,11 @@
 # contains display and small display related functions
 
 from Tkinter import *
+import tkMessageBox
+wdBaseWindow = Tk()
 from displayNames import lstDisplayLBLNames
 import LabyrinthModule2Function
 import time
-
-fn = LabyrinthModule2Function.Functions()
 
 
 class GUI:
@@ -21,27 +21,19 @@ class GUI:
         self.master.maxsize(700, 550)
         self.fnCreateWidgets()
 
-        lstDisplayLBLNames = []
-
-#define the names of the labels that are used in both files and make them global
-
 
     def fnCreateWidgets(self):
-        # set background color
-        bg = '#b3c9d1'
+
+        self.mode = StringVar()
+        self.mode.set("Sphero Control")
+
         #set the default image for the display
         self.blank = PhotoImage(file = 'blank.gif')
         # set the font for the whole GUI
         font = 'Calibri'
-        # Bold Font size, set fontsize for headings + buttons
-        BfontSize = 16
-        # set basic fontsize
-        fontSize = 12
-        # create the list of names for the labels in the display
-
 
         # create the frame
-        self.frWindow = Frame(height=400, width=500, bg=bg)
+        self.frWindow = Frame(height=400, width=500)
         self.frWindow.pack(fill=BOTH, expand=1)
 
         #background image
@@ -59,6 +51,14 @@ class GUI:
         menubar.add_cascade(label="File", menu=fileMenu)
         wdBaseWindow.config(menu=menubar)
 
+        # label 'mode'
+        self.lblMode = Label(self.frWindow, text='Mode:')
+        self.lblMode.grid(row=1, column=2, columnspan =2,padx=(30, 0), pady = (20,10))
+
+        #optionbox for simulation / sphero control modes
+        self.optMenu = OptionMenu(self.frWindow, self.mode, "Simulation", "Sphero Control")
+        self.optMenu.grid(row = 1,columnspan = 4 ,column = 3,pady = (20,10))
+
         # label, will display the Sphero runtime
         self.lblTime = Label(self.frWindow, text = 'Time:')
         self.lblTime.grid(row=1, column =10, pady = (20,10))
@@ -67,6 +67,7 @@ class GUI:
         self.lblTimeElapsed.grid(row=1, column=11, pady=(20, 10))
 
         # button, starts the run
+
         self.btnStart = Button(self.frWindow, text="Start", command =self.fnStart,font=(font,16))
         self.btnStart.grid(row=10, column=3,columnspan=2, pady = (10,0))
 
@@ -126,9 +127,8 @@ class GUI:
             else:
                 lstDisplayLBLNames[each].grid(row=int(name[-3]) + 2, column=int(name[-1]) + 12, padx=(1, 1), pady=(1, 1))
 
-
-
         self.frWindow.update()
+        self.fn = LabyrinthModule2Function.Functions()
 
 # quits program, closes window
     def fnQuit(self):
@@ -148,19 +148,19 @@ class GUI:
 
         wdBaseWindow.update()
 
-        
-
     def fnStart(self):
-        # call the sphero start command in the functions file
-        fn.fnUpdateDisplay()
+        # calls a different function depending on the mode selected
+        if self.mode.get() == "Sphero Control":
+            tkMessageBox.showinfo("Sphero Check","Please ensure that your Sphero is on and placed in the centre of the start of the maze facing forwards.")
+            self.fn.fnSpheroStart()
+        elif self.mode.get() == "Simulation":
+            self.fn.fnUpdateDisplay()
+
 
         start = time.time()
         global start
         wdBaseWindow.after(1000, self.fnTimeElapsed)
-        
 
-
-wdBaseWindow = Tk()
 appBasicGUI = GUI(wdBaseWindow)
 wdBaseWindow.mainloop()
 
