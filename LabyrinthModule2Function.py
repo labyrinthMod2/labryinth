@@ -40,10 +40,10 @@ class Functions:
         self.hor = PhotoImage(file='horizontal.gif')
         self.ver = PhotoImage(file='vertical.gif')
         self.start = PhotoImage(file='start.gif')
+        self.blank = PhotoImage(file='blank.gif')
 
         # display is updated with obstacles
         for i in range(96):
-            print self.arrMaze[i]
             if self.arrMaze[i] == 'Z':
                 lstDisplayLBLNames[i].config(image=ob3)
                 lstDisplayLBLNames[i].image = ob3
@@ -77,6 +77,14 @@ class Functions:
     """ Upon button 'Start' pressed, route will be calculated and sent to sphero to move
         output: movement of Sphero"""
     def fnSpheroStart(self):
+        # incase user stops program and starts again,
+        for eachGrid in self.bestRoute:
+        # start image is already set so it is skipped in the blanking process
+            if self.bestRoute[0] == eachGrid:
+                pass
+            else:
+                lstDisplayLBLNames[eachGrid-1].config(image = self.blank)
+                lstDisplayLBLNames[eachGrid-1].image = self.blank
 
         # bluetooth sphero connection is activated
         #sphero.connect()
@@ -90,8 +98,6 @@ class Functions:
         speed = 0.35
         time_one_grid = 0.125
 
-        #bestRoute = visited points
-
         """ from the best route, Sphero specific instructions are generated
         input:best route
         output: instructions are sent to and are carried out by Sphero"""
@@ -102,132 +108,142 @@ class Functions:
         index = 0
 
         for eachStep in self.bestRoute:
+            self.index = index
+            self.eachStep = eachStep
+            lstDisplayLBLNames[0].after(1000)
 
             # if the next grid visited is equal to current grid + 1, then it must be located to the right
             try:
                 if self.bestRoute[index + 1] == self.bestRoute[index] + 1:
                     print 'right'
                     # sphero.roll(50, 0, 1, True)
+                    self.fnDisplayLogic()
 
                 # if the next grid visited is equal to current grid + 1, then it must be located to the left
                 elif self.bestRoute[index + 1] == self.bestRoute[index] - 1:
                     # sphero.roll(50, 180, 1, True)
                     print 'left'
+                    self.fnDisplayLogic()
 
                 # if the next grid visited is equal to current grid + 12, then it must be located downwards
                 elif self.bestRoute[index + 1] == self.bestRoute[index] - 12:
                     # sphero.roll(50, 270, 1, True)
                     print 'up'
+                    self.fnDisplayLogic()
 
                 # if the next grid visited is not equal to any of the earlier options, it must be located upwards
                 elif self.bestRoute[index + 1] == self.bestRoute[index] + 12:
                     # sphero.roll(50, 270, 1, True)
                     print 'down'
+                    self.fnDisplayLogic()
 
             # the end of the route
             except IndexError:
                 pass
             index += 1
-            self.fnUpdateDisplay()
-
-
-
             
     # stops the movement of the sphero
     def fnSpheroStop(self):
-        """also stop display"""
+        self.stop = True
         #sphero.disconnect(self)
 
 
-    """upon mouse click 'start', uses an arrangement of pictures to replicate the route the Sphero is following
-        input: best route instructions
-        output: display is updated"""
-
+  # in simulation mode, only display logic is called as there is no control of sphero
     def fnUpdateDisplay(self):
-
+        self.stop = False
         # using list of pictures to replicate route, wait amount of seconds, display the next picture
         index = -1
         for eachStep in self.bestRoute:
-            index += 1
+            index+=1
             lstDisplayLBLNames[0].after(1000)
+            if self.stop == True:
+                break
+            if index == 0:
+                continue
+            self.index = index
+            self.eachStep = eachStep
 
-            try:
-                # the first grid is already set so is ignored in the loop
-                if index == 0:
-                    continue
+            self.fnDisplayLogic()
 
-                # last grid is to the left of the current grid
-                if self.bestRoute[index - 1] == self.bestRoute[index] - 1:
-                    # next grid is above current grid but last grid was to the left
-                    if self.bestRoute[index + 1] == self.bestRoute[index] - 12:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.leftUp)
-                        lstDisplayLBLNames[eachStep - 1].image = self.leftUp
 
-                    # next grid is below current grid but last grid was the left
-                    elif self.bestRoute[index + 1] == self.bestRoute[index] + 12:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.leftDown)
-                        lstDisplayLBLNames[eachStep - 1].image = self.leftDown
+# here is the logic statements to determine which image to display in which grid to replicate the route
+    def fnDisplayLogic(self):
+        try:
+            # last grid is to the left of the current grid
+            if self.bestRoute[self.index - 1] == self.bestRoute[self.index] - 1:
+                # next grid is above current grid but last grid was to the left
+                if self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 12:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.leftUp)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.leftUp
 
-                    # next grid is to the right of the current grid but last grid was to the left
-                    elif self.bestRoute[index + 1] == self.bestRoute[index] + 1:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.hor)
-                        lstDisplayLBLNames[eachStep - 1].image = self.hor
+                # next grid is below current grid but last grid was the left
+                elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 12:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.leftDown)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.leftDown
 
-                # last grid is to the right of the current grid
-                elif self.bestRoute[index - 1] == self.bestRoute[index] + 1:
-                    # next grid is above the current grid but last grid was to the right
-                    if self.bestRoute[index + 1] == self.bestRoute[index] - 12:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.rightUp)
-                        lstDisplayLBLNames[eachStep - 1].image = self.rightUp
+                # next grid is to the right of the current grid but last grid was to the left
+                elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 1:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.hor)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.hor
 
-                    # next grid is below the current grid but last grid was to the right
-                    elif self.bestRoute[index + 1] == self.bestRoute[index] + 12:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.rightDown)
-                        lstDisplayLBLNames[eachStep - 1].image = self.rightDown
+            # last grid is to the right of the current grid
+            elif self.bestRoute[self.index - 1] == self.bestRoute[self.index] + 1:
+                # next grid is above the current grid but last grid was to the right
+                if self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 12:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.rightUp)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.rightUp
 
-                    # last grid was to the right and next grid is to the left of the current grid
-                    elif self.bestRoute[index + 1] == self.bestRoute[index] - 1:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.hor)
-                        lstDisplayLBLNames[eachStep - 1].image = self.hor
+                # next grid is below the current grid but last grid was to the right
+                elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 12:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.rightDown)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.rightDown
 
-                # last grid is above of the current grid
-                elif self.bestRoute[index - 1] == self.bestRoute[index] - 12:
-                    # next grid is to the left of current grid, last grid was above current grid
-                    if self.bestRoute[index + 1] == self.bestRoute[index] - 1:
-                        lstDisplayLBLNames[eachStep -1].config(image = self.leftUp)
-                        lstDisplayLBLNames[eachStep - 1].image = self.leftUp
+                # last grid was to the right and next grid is to the left of the current grid
+                elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 1:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.hor)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.hor
 
-                    # next grid is to the right of current grid, last grid was above current grid
-                    elif self.bestRoute[index + 1] == self.bestRoute[index] + 1:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.rightUp)
-                        lstDisplayLBLNames[eachStep - 1].image = self.rightUp
+            # last grid is above of the current grid
+            elif self.bestRoute[self.index - 1] == self.bestRoute[self.index] - 12:
+                # next grid is to the left of current grid, last grid was above current grid
+                if self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 1:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.leftUp)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.leftUp
 
-                    # next grid is below current grid, last grid was above current grid
-                    elif self.bestRoute[index + 1] == self.bestRoute[index] + 12:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.ver)
-                        lstDisplayLBLNames[eachStep - 1].image = self.ver
+                # next grid is to the right of current grid, last grid was above current grid
+                elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 1:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.rightUp)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.rightUp
 
-                # last grid is below the current grid
-                elif self.bestRoute[index - 1] == self.bestRoute[index] + 12:
-                    # next grid is to the left of current grid, last grid was below current grid
-                    if self.bestRoute[index + 1] == self.bestRoute[index] + 1:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.leftDown)
-                        lstDisplayLBLNames[eachStep - 1].image = self.leftDown
+                # next grid is below current grid, last grid was above current grid
+                elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 12:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.ver)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.ver
 
-                        # next grid is to the right of current grid, last grid was below
-                    if self.bestRoute[index + 1] == self.bestRoute[index] - 1:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.rightDown)
-                        lstDisplayLBLNames[eachStep - 1].image = self.rightDown
+            # last grid is below the current grid
+            elif self.bestRoute[self.index - 1] == self.bestRoute[self.index] + 12:
+                # next grid is to the left of current grid, last grid was below current grid
+                if self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 1:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.leftDown)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.leftDown
 
-                    # next grid is above of current grid, last grid was below current grid
-                    elif self.bestRoute[index + 1] == self.bestRoute[index] - 12:
-                        lstDisplayLBLNames[eachStep - 1].config(image=self.ver)
-                        lstDisplayLBLNames[eachStep - 1].image = self.ver
+                    # next grid is to the right of current grid, last grid was below
+                if self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 1:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.rightDown)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.rightDown
 
-            # there is no 'next grid'- current grid is the end route
-            except IndexError:
-                # init = PhotoImage(file = 'start.gif')
-                lstDisplayLBLNames[eachStep - 1].config(image=self.start)
-                lstDisplayLBLNames[eachStep - 1].image = self.start
-            lstDisplayLBLNames[2].update()
+                # next grid is above of current grid, last grid was below current grid
+                elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 12:
+                    lstDisplayLBLNames[self.eachStep - 1].config(image=self.ver)
+                    lstDisplayLBLNames[self.eachStep - 1].image = self.ver
+
+        # there is no 'next grid'- current grid is the end route
+        except IndexError:
+            # init = PhotoImage(file = 'start.gif')
+            lstDisplayLBLNames[self.eachStep - 1].config(image=self.start)
+            lstDisplayLBLNames[self.eachStep - 1].image = self.start
+        lstDisplayLBLNames[2].update()
+
+
+
 
