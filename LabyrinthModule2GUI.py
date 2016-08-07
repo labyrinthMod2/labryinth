@@ -4,12 +4,13 @@
 
 # contains display and small display related functions
 
+from displayNames import lstDisplayLBLNames, lblTime
+import LabyrinthModule2Function
+import time
 from Tkinter import *
 import tkMessageBox
 wdBaseWindow = Tk()
-from displayNames import lstDisplayLBLNames
-import LabyrinthModule2Function
-import time
+
 
 
 class GUI:
@@ -63,8 +64,8 @@ class GUI:
         self.lblTime = Label(self.frWindow, text = 'Time:')
         self.lblTime.grid(row=1, column =10, pady = (20,10))
 
-        self.lblTimeElapsed = Label(self.frWindow, text='00:00')
-        self.lblTimeElapsed.grid(row=1, column=11, pady=(20, 10))
+        lblTime[0] = Label(self.frWindow, text='00:00')
+        lblTime[0].grid(row=1, column=11, pady=(20, 10))
 
         # button, starts the run
 
@@ -118,7 +119,6 @@ class GUI:
             lstDisplayLBLNames[each] = Label(self.frWindow,image = self.blank, width=47, height=47, relief = SUNKEN)
 
             # a length checker is necessary as labels in the 12th row are have 3 digits in their name
-            # a length checker is necessary as labels in the 12th row are have 3 digits in their name
             if len(name) == 6:
                 lstDisplayLBLNames[each].grid(row=int(name[-2]) + 2, column=int(name[-1]) + 2)
                 if int(name[-1]) == 0:
@@ -143,43 +143,14 @@ class GUI:
     def fnReturnModule1(self):
         pass
 
-    def fnTimeElapsed(self):
-        # starts the timer displayed in the time elapsed label
-        self.stop = False
-        for i in range(26):
-            # if stop is pressed, time elapsed will cease updating
-            if self.stop == True:
-                break
-
-            # wait time delay
-            lstDisplayLBLNames[0].after(1000)
-            now = time.time()
-            #calcualte seoonds passed since start was initially pressed
-            time_elapsed = now - start
-            # display the diffence in time
-            self.lblTimeElapsed.config(text=round(time_elapsed,2))
-            # update the label
-            self.lblTimeElapsed.update()
-
-
     def fnStart(self):
-
-
 
         # calls a different function depending on the mode selected
         if self.mode.get() == "Sphero Control":
             tkMessageBox.showinfo("Sphero Check","Please ensure that your Sphero is on and placed in the centre of the start of the maze facing forwards.")
             self.fn.fnSpheroStart()
-            self.fn.fnUpdateDisplay()
         elif self.mode.get() == "Simulation":
             self.fn.fnUpdateDisplay()
-
-        start = time.time()
-        global start
-        self.fnTimeElapsed()
-
-
-
 
 appBasicGUI = GUI(wdBaseWindow)
 wdBaseWindow.mainloop()

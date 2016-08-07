@@ -2,18 +2,24 @@
 # Cecily Tighe
 # 2016
 
-#contains most of the functionality
+# contains functionality for Labyrinth Module 2
 
 import xml.etree.ElementTree as ET
-import time
 #import sphero_driver
 from Tkinter import *
-from displayNames import lstDisplayLBLNames
+import time
+from displayNames import lstDisplayLBLNames, lblTime
 
 #sphero = sphero_driver.Sphero()
 
 class Functions:
     def __init__(self):
+
+        # define variable start
+        self.startTime = time.time()
+
+        # set the initial value for stop boolean
+        self.stop = False
 
         # bestRoute and dictMaze are gathered from xml file
         # bestRoute: list of all of the grids the sphero visits in order of visitation
@@ -63,6 +69,7 @@ class Functions:
 
 
 
+
     """using bluetooth, the Sphero is checked for a response and a battery level is received
         output: error raised if no response or no battery"""
     def fnSpheroCheck(self):
@@ -77,14 +84,7 @@ class Functions:
     """ Upon button 'Start' pressed, route will be calculated and sent to sphero to move
         output: movement of Sphero"""
     def fnSpheroStart(self):
-        # incase user stops program and starts again,
-        for eachGrid in self.bestRoute:
-        # start image is already set so it is skipped in the blanking process
-            if self.bestRoute[0] == eachGrid:
-                pass
-            else:
-                lstDisplayLBLNames[eachGrid-1].config(image = self.blank)
-                lstDisplayLBLNames[eachGrid-1].image = self.blank
+
 
         # bluetooth sphero connection is activated
         #sphero.connect()
@@ -98,6 +98,9 @@ class Functions:
         speed = 0.35
         time_one_grid = 0.125
 
+        # set stop to false
+        self.stop = False
+
         """ from the best route, Sphero specific instructions are generated
         input:best route
         output: instructions are sent to and are carried out by Sphero"""
@@ -105,15 +108,26 @@ class Functions:
         # set heading to zero to ensure orientation is correct
         # sphero.set_heading(self, heading, response)
 
+        # set initial time
+        self.startTime = time.time()
+
         index = 0
 
         for eachStep in self.bestRoute:
+            # if stop has been pressed, display ceases updating
+            if self.stop == True:
+                break
+
+            # make the variables index, eachStep able to be accessed in the display logic function
             self.index = index
             self.eachStep = eachStep
+
+            # time delay
             lstDisplayLBLNames[0].after(1000)
 
             # if the next grid visited is equal to current grid + 1, then it must be located to the right
             try:
+
                 if self.bestRoute[index + 1] == self.bestRoute[index] + 1:
                     print 'right'
                     # sphero.roll(50, 0, 1, True)
@@ -139,36 +153,72 @@ class Functions:
 
             # the end of the route
             except IndexError:
-                pass
+                self.fnDisplayLogic()
             index += 1
             
     # stops the movement of the sphero
     def fnSpheroStop(self):
+
+        # set the stop boolean to true
         self.stop = True
-        #sphero.disconnect(self)
 
+        # disconnect from sphero via bluetooth
+        # sphero.disconnect(self)
 
-  # in simulation mode, only display logic is called as there is no control of sphero
+        # clears the display of route
+        for eachGrid in self.bestRoute:
+            # start image is already set so it is skipped in the blanking process
+            if self.bestRoute[0] == eachGrid:
+                pass
+            else:
+                lstDisplayLBLNames[eachGrid - 1].config(image=self.blank)
+                lstDisplayLBLNames[eachGrid - 1].image = self.blank
+
+        # clear time elapsed label
+        lblTime[0].config(text = "00:00")
+
+# in simulation mode, only display logic is called as there is no control of sphero
     def fnUpdateDisplay(self):
+
+        # set stop to false
         self.stop = False
+
+        # set initial time
+        self.startTime = time.time()
+
         # using list of pictures to replicate route, wait amount of seconds, display the next picture
         index = -1
         for eachStep in self.bestRoute:
-            index+=1
-            lstDisplayLBLNames[0].after(1000)
+            index += 1
+
+            # if stop has been pressed, display ceases updating
             if self.stop == True:
                 break
+
+            # time delay
+            lstDisplayLBLNames[0].after(1000)
+
+            # initial grid is already set so this is skipped
             if index == 0:
                 continue
+
+            # make the variable able to be accessed in the display logic function
             self.index = index
             self.eachStep = eachStep
 
+            # call the display logic function to place correct image into the current grid
             self.fnDisplayLogic()
-
 
 # here is the logic statements to determine which image to display in which grid to replicate the route
     def fnDisplayLogic(self):
         try:
+            # update the time elapsed display
+            nowTime = time.time()
+            # calculate seconds passed since start was initially pressed
+            time_elapsed = nowTime - self.startTime
+            # display the difference in time
+            lblTime[0].config(text=round(time_elapsed, 2))
+
             # last grid is to the left of the current grid
             if self.bestRoute[self.index - 1] == self.bestRoute[self.index] - 1:
                 # next grid is above current grid but last grid was to the left
@@ -242,8 +292,6 @@ class Functions:
             # init = PhotoImage(file = 'start.gif')
             lstDisplayLBLNames[self.eachStep - 1].config(image=self.start)
             lstDisplayLBLNames[self.eachStep - 1].image = self.start
+
+        # update the window
         lstDisplayLBLNames[2].update()
-
-
-
-
