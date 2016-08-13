@@ -29,7 +29,7 @@ for each in range(96):
     lstDisplayLBLNames.append(name)
 
     lblTime = ['lblTimeElapsed']
-
+    lblStatusUpdate = ['lblStatusUpdate']
 
 
 

@@ -8,11 +8,11 @@ import xml.etree.ElementTree as ET
 import sphero_driver
 from Tkinter import *
 import time
-from displayNames import lstDisplayLBLNames, lblTime
+from displayNames import lstDisplayLBLNames, lblTime, lblStatusUpdate
 import tkMessageBox
 
 sphero = sphero_driver.Sphero()
-#sphero = sphero_driver.Sphero('test', '68:86:E7:02:76:77')
+
 
 class Functions:
     def __init__(self):
@@ -20,85 +20,69 @@ class Functions:
         self.bestRoute = []
         # parse xml file
         tree = ET.parse('route.xml')
-        for each in tree.findall('cell'):
-            self.arrMaze.append(each.text)
+        # bestRoute and dictMaze are gathered from xml file
+        # bestRoute: list of all of the grids the sphero visits in order of visitation
+        # arrMaze: 1d array containing 96 characters representing objects in the maze
 
+        # self.arrMaze is gathered from the xml file
         index = 0
-        top = []
-        left = []
-        right = []
-        bottom = []
-        # the maze is sorted so that barriers are removed and only maze array is left
-        print self.arrMaze
-        print len(self.arrMaze)
-        for eachItem in self.arrMaze:
-            # barriers are removed so only 'x''s left are obstacles
-            if index < 14:
-                top.append(eachItem)
-                self.arrMaze.remove(eachItem)
-            elif index % 14 == 0:
-                left.append(eachItem)
-                self.arrMaze.remove(eachItem)
-            elif index % 14 == 13:
-                right.append(eachItem)
-                self.arrMaze.remove(eachItem)
-            elif index > 124:
-                bottom.append(eachItem)
-                self.arrMaze.remove(eachItem)
+        # because the maze array in the xml file has barriers, these need to be removed
+        # to format the array for display
+        for each in tree.findall('cell'):
             index += 1
-        print self.arrMaze
-        print len(self.arrMaze)
-        print 'top', len(top)
-        print 'left', len(left)
-        print 'right', len(right)
-        print 'bottom', len(bottom)
+            print 'bare', each.text
+            # the first row is not used
+            if index < 15:
+                continue
+            # the last row is not used
+            elif index > 126:
+                continue
+            # the right row is not used
+            elif index % 14 == 0:
+                continue
+            # the left row is not used
+            elif index % 14 == 1:
+                continue
+            # the actual grids are placed in the arrMaze array
+            else:
+                self.arrMaze.append(each.text)
 
-        # route is gathered, sorted and appended to bestRoute
+        # bestRoute is gathered from the xml file
         for eachRoute in tree.findall('route'):
-            for eachGrid in eachRoute.findall('grid'):
-                eachGrid = eachGrid.text
-                self.bestRoute.append(int(eachGrid))
-        print self.bestRoute
+            for eachCell in eachRoute.findall('grid'):
+                eachCell = int(eachCell.text)
+                # in the xml file, barriers are included in the grid size,
+                #  so instead of a 8*12 grid, it becomes a 14*10 grid
+                # to overcome this, the magnitude of the grid needs to be lowered according to position in the maze
+                if eachCell < 27:
+                    eachCell -= 14
+                elif eachCell < 41:
+                    eachCell -= 16
+                elif eachCell < 55:
+                    eachCell -= 18
+                elif eachCell < 69:
+                    eachCell -= 20
+                elif eachCell < 83:
+                    eachCell -= 22
+                elif eachCell < 97:
+                    eachCell -= 24
+                elif eachCell < 111:
+                    eachCell -= 26
+                elif eachCell < 125:
+                    eachCell -= 28
+                self.bestRoute.append(eachCell)
+
+        # some of the grid values in the xml path may be repeated due to individual paths being
+        # calculated for each waypoint so these need to be removed to insure the display will work
         index = 0
         for eachCell in self.bestRoute:
             try:
+                # if the next grid is the same as the current grid, remove it from bestRoute
                 if self.bestRoute[index] == self.bestRoute[index +1]:
                     self.bestRoute.remove(eachCell)
-            except: # the last grid will have no 'next grid'
+            except IndexError:  # the last grid will have no 'next grid'
                 pass
-
-            # in the xml file, barriers are included in the grid size, so instead of a 8*12 grid, it becomes a 14*10 grid
-            # to overcome this, the magnitude of the grid needs to be lowered according to position in the maze
-            if eachCell < 27:
-                self.bestRoute[index] = self.bestRoute[index] - 14
-            elif eachCell < 41:
-                self.bestRoute[index] = self.bestRoute[index] - 16
-            elif eachCell < 55:
-                self.bestRoute[index] = self.bestRoute[index] - 18
-            elif eachCell < 69:
-                self.bestRoute[index] = self.bestRoute[index] - 20
-            elif eachCell < 83:
-                self.bestRoute[index] = self.bestRoute[index] - 22
-            elif eachCell < 97:
-                self.bestRoute[index] = self.bestRoute[index] - 24
-            elif eachCell < 111:
-                self.bestRoute[index] = self.bestRoute[index] - 26
-            elif eachCell < 125:
-                self.bestRoute[index] = self.bestRoute[index] -28
             index += 1
-
-        print self.bestRoute
-
-        self.bestRoute = [1, 2, 3, 4, 5, 17, 29, 41, 42, 43, 55, 67, 79, 91, 92, 93, 94, 95, 96]
-
-        self.arrMaze = [1, 2, 3, 4, 5, 6, 7, 8, 9, 20, 11, 12,
-                        'Z', 'Z', 'Z', 0, 0, 0, 'X', 0, 0, 0, 0, 0,
-                        'Z', 'Z', 'Z', 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        'Z', 'Z', 'Z', 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0, 0, 'X', 0, 0,
-                        0, 'Y', 'Y', 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 'Y', 'Y', 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         # define variable start
         self.startTime = time.time()
@@ -108,18 +92,9 @@ class Functions:
 
         # how long it takes to cross one (12*8) grid in milliseconds at sphero speed 50 when added to the wait time
         # of the start function
-        self.timeOneGrid = 1
-
-        # bestRoute and dictMaze are gathered from xml file
-        # bestRoute: list of all of the grids the sphero visits in order of visitation
-        # arrMaze: 1d array containing 96 characters representing objects in the maze
-
-
-
-        self.ob2 = PhotoImage(file='ob2.gif')
-        self.ob3 = PhotoImage(file='ob3.gif')
-        self.ob1 = PhotoImage(file='ob1.gif')
-
+        self.timeOneGrid = 500
+        #
+        self.obs = PhotoImage(file='obs.gif')
         self.leftUp = PhotoImage(file="left_up.gif")
         self.leftDown = PhotoImage(file="left_down.gif")
         self.rightDown = PhotoImage(file='right_down.gif')
@@ -132,18 +107,9 @@ class Functions:
         # display is updated with obstacles
         try:
             for i in range(96):
-                if self.arrMaze[i] == 'Z':
-                    lstDisplayLBLNames[i].config(image=self.ob3)
-                    lstDisplayLBLNames[i].image = self.ob3
-
-                elif self.arrMaze[i] == 'Y':
-                    lstDisplayLBLNames[i].config(image=self.ob2)
-                    lstDisplayLBLNames[i].image = self.ob2
-
-                elif self.arrMaze[i] == 'X':
-                    lstDisplayLBLNames[i].config(image=self.ob1)
-                    lstDisplayLBLNames[i].image = self.ob1
-
+                if self.arrMaze[i] == 'x':
+                    lstDisplayLBLNames[i].config(image=self.obs)
+                    lstDisplayLBLNames[i].image = self.obs
         except IndexError: # arrMaze is empty
             tkMessageBox.showerror("Error", "The grid seems to be empty, please try again")
 
@@ -153,108 +119,99 @@ class Functions:
             lstDisplayLBLNames[self.bestRoute[0] - 1].image = self.start
         except IndexError:
             tkMessageBox.showerror("No route Found", "There is no route found, please try putting in a route again.")
-            
-        
-    """using bluetooth, the Sphero is checked for a response and a battery level is received
-        output: error raised if no response or no battery"""
-    def fnSpheroCheck(self):
 
-        """get battery life, response check. if battery is below a certain point, raise error
-        """
-        #battery = sphero.get_power_state(True)
-        #print battery
-
-
-
-    """ Upon button 'Start' pressed, route will be calculated and sent to sphero to move
-        output: movement of Sphero"""
-
-
-
+    # Upon button 'Start' pressed, route will be calculated and sent to sphero to move
+    # input: bearing (0 - 259 int value)
+    # output: movement of Sphero"""
     def fnSpheroStart(self, bearing):
+        # set status update
+        lblStatusUpdate[0].config(text='Connecting to Sphero...')
+        # update the window
+        lstDisplayLBLNames[2].update()
 
-        print 'sphero start', bearing
-        # bluetooth sphero connection is activated
-        sphero.connect()
+        # wait 10 seconds for bluetooth sphero connection to be ready again
+        lstDisplayLBLNames[0].after(5000)
 
-        # raw values set
-        sphero.set_filtered_data_strm(40, 1, 0, True)
+        try:
+            # bluetooth sphero connection is activated
+            sphero.connect()
+            # raw values set
+            sphero.set_filtered_data_strm(40, 1, 0, True)
+            # sphero is ready
+            sphero.start()
+            lblStatusUpdate[0].config(text='Connection successful')
+            # update the window
+            lstDisplayLBLNames[2].update()
 
-        #s sphero is ready
-        sphero.start()
+            # set stop to false
+            self.stop = False
 
-        #speed = 0.35 m/s
+            # set initial time
+            self.startTime = time.time()
 
-        # set stop to false
-        self.stop = False
+        # in case of bluetooth connection to sphero failure
+        except IOError, AttributeError:
+            # ask user if they would like to attempt the connection again
+            attemptAgain = tkMessageBox.askyesno("Sphero Connection", "Connection Failure. Retry Connection?")
+            if attemptAgain is True:  # user would like to attempt again
+                self.fnSpheroStart(bearing)
 
-        """ from the best route, Sphero specific instructions are generated
-        input:best route
-        output: instructions are sent to and are carried out by Sphero"""
-
-        # set initial time
-        self.startTime = time.time()
-
-        # the bearing variable, amount of compensation for roll heading
-
+            else:  # user does not want to attempt again
+                # clear status bar; no processes going on
+                lblStatusUpdate[0].config(text='')
+                # update the window
+                lstDisplayLBLNames[2].update()
 
         index = 0
-        #sphero.set_stablization(1, True)
-        #sphero.set_heading(0, True)
+        # this loops through each grid in bestRoute as determines where to direct sphero
+        # then it calls the update display function to represent the route as it is occurring
         for eachStep in self.bestRoute:
-            print 'start of loop'
-            lstDisplayLBLNames[0].after(600)
+            #################################################
+            #lstDisplayLBLNames[0].after(600) i dont remember why this is here but it could be important
+            ######################################################
             # if stop has been pressed, display ceases updating
             if self.stop == True:
                 break
-
             # make the variables index, eachStep able to be accessed in the display logic function
             self.index = index
             self.eachStep = eachStep
 
-            # if the next grid visited is equal to current grid + 1, then it must be located to the right
+            # all directions are in terms of sphero travelling at 'bearing'
+            # if the next grid visited is equal to current grid + 1, straight ahead
             try:
                 if self.bestRoute[index + 1] == self.bestRoute[index] + 1:
-                    print 'right'
                     sphero.roll(50, bearing, 1, True)
                     self.fnDisplayLogic()
 
-                # if the next grid visited is equal to current grid + 1, then it must be located to the left
+                # if the next grid visited is equal to current grid + 1, then it must be located behind
                 elif self.bestRoute[index + 1] == self.bestRoute[index] - 1:
                     if bearing + 180 >= 360:
-                        bearing = bearing - 360
-
-                        print bearing + 180
-                        print bearing #global
+                        bearing -= 360
                     sphero.roll(50, bearing + 180, 1, True)
-                    print 'left'
                     self.fnDisplayLogic()
 
-                # if the next grid visited is equal to current grid + 12, then it must be located downwards
+                # if the next grid visited is equal to current grid + 12, then it must be located to the right
                 elif self.bestRoute[index + 1] == self.bestRoute[index] - 12:
                     if bearing + 270 >= 360:
-                        bearing = bearing - 360
+                        bearing -= 360
                     sphero.roll(50, bearing + 270, 1, True)
-                    print 'up'
                     self.fnDisplayLogic()
 
-                # if the next grid visited is not equal to any of the earlier options, it must be located upwards
+                # if the next grid visited is not equal to current grid - 12, it must be located to the left
                 elif self.bestRoute[index + 1] == self.bestRoute[index] + 12:
-                    if bearing +90 >= 360:
-                        bearing = bearing - 360
+                    if bearing + 90 >= 360:
+                        bearing -= 360
                     sphero.roll(50, bearing + 90, 1, True)
-                    print 'down'
                     self.fnDisplayLogic()
 
             # the end of the route
             except IndexError:
                 self.fnDisplayLogic()
+                # stop sphero rolling
                 sphero.roll(0,0,0,True)
 
             # time delay
-
             lstDisplayLBLNames[0].after(self.timeOneGrid)
-            print "#####"
             index += 1
 
     # stops the movement of the sphero
@@ -267,28 +224,24 @@ class Functions:
             else:
                 lstDisplayLBLNames[eachGrid - 1].config(image=self.blank)
                 lstDisplayLBLNames[eachGrid - 1].image = self.blank
-                
-        # if the route wen through an obstacle, obstacle images would disappear so they need to be recreated
-            for i in range(96):
-                if self.arrMaze[i] == 'Z':
-                    lstDisplayLBLNames[i].config(image=self.ob3)
-                    lstDisplayLBLNames[i].image = self.ob3
 
-                elif self.arrMaze[i] == 'Y':
-                    lstDisplayLBLNames[i].config(image=self.ob2)
-                    lstDisplayLBLNames[i].image = self.ob2
-
-                elif self.arrMaze[i] == 'X':
-                    lstDisplayLBLNames[i].config(image=self.ob1)
-                    lstDisplayLBLNames[i].image = self.ob1
-                    
         # set the stop boolean to true
         self.stop = True
 
-        # disconnect from sphero via bluetooth
-        sphero.disconnect()
+        try:
+            # if mode selected is simulation, trying to disconnect from a sphero that was never connected in the first
+              # place will raise an error
+            # clear status
+            lblStatusUpdate[0].config(text='Disconnecting from Sphero...')
+            lstDisplayLBLNames[2].update()
+            # disconnect from sphero via bluetooth
+            sphero.term_thread()
+            sphero.disconnect()
+            # update status
+            lblStatusUpdate[0].config(text='Sphero Disconnected')
+        except AttributeError:
+            lblStatusUpdate[0].config(text='')
 
-        
         # clear time elapsed label
         lblTime[0].config(text = "00:00")
 
@@ -333,71 +286,78 @@ class Functions:
             timeElapsed = nowTime - self.startTime
             # display the difference in time
             lblTime[0].config(text=round(timeElapsed, 2))
+            # the display logic is in terms of the sphero robot being in the centre of the current grid
+            # travelling at 'bearing' in degrees True
+            #               left
+            #               _________
+            #  behind    |  sphero -> | ahead
+            #            |  ----------|
+            #                right
 
-            # last grid is to the left of the current grid
+            # last grid is behind the current grid
             if self.bestRoute[self.index - 1] == self.bestRoute[self.index] - 1:
-                # next grid is above current grid but last grid was to the left
+                # next grid is above current grid but last grid was behind
                 if self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 12:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.leftUp)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.leftUp
 
-                # next grid is below current grid but last grid was the left
+                # next grid is to the right of current grid but last grid was behind
                 elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 12:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.leftDown)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.leftDown
 
-                # next grid is to the right of the current grid but last grid was to the left
+                # next grid is straight ahead of current grid but last grid was behind
                 elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 1:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.hor)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.hor
 
-            # last grid is to the right of the current grid
+            # last grid is to straight ahead of current grid
             elif self.bestRoute[self.index - 1] == self.bestRoute[self.index] + 1:
-                # next grid is above the current grid but last grid was to the right
+                # next grid is to the left of current grid but last grid was straight ahead
                 if self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 12:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.rightUp)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.rightUp
 
-                # next grid is below the current grid but last grid was to the right
+                # next grid is to the right of current grid but last grid was straight ahead
                 elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 12:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.rightDown)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.rightDown
 
-                # last grid was to the right and next grid is to the left of the current grid
+                # last grid was straight ahead and next grid is directly behind current grid
                 elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 1:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.hor)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.hor
 
-            # last grid is above of the current grid
+            # last grid is to the left of current grid
             elif self.bestRoute[self.index - 1] == self.bestRoute[self.index] - 12:
-                # next grid is to the left of current grid, last grid was above current grid
+                # next grid is directly behind current grid, last grid was to the left
                 if self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 1:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.leftUp)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.leftUp
 
-                # next grid is to the right of current grid, last grid was above current grid
+                # next grid is straight ahead current grid, last grid was to the left
                 elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 1:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.rightUp)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.rightUp
 
-                # next grid is below current grid, last grid was above current grid
+                # next grid to the right of current grid, last grid was to the left
                 elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 12:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.ver)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.ver
 
-            # last grid is below the current grid
+            # last grid is to the right of the current grid
             elif self.bestRoute[self.index - 1] == self.bestRoute[self.index] + 12:
-                # next grid is to the left of current grid, last grid was below current grid
+                # next grid is directly behind current grid, last grid was to the right
                 if self.bestRoute[self.index + 1] == self.bestRoute[self.index] + 1:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.rightDown)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.rightDown
 
-                    # next grid is to the right of current grid, last grid was below
+                    # next grid is to the right of current grid, last grid was to the right
                 if self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 1:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.leftDown)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.leftDown
 
-                # next grid is above of current grid, last grid was below current grid
+                # next grid is to the left of current grid, last grid to the right
                 elif self.bestRoute[self.index + 1] == self.bestRoute[self.index] - 12:
                     lstDisplayLBLNames[self.eachStep - 1].config(image=self.ver)
                     lstDisplayLBLNames[self.eachStep - 1].image = self.ver

@@ -4,9 +4,8 @@
 
 # contains display and small display related functions
 
-from displayNames import lstDisplayLBLNames, lblTime
+from displayNames import lstDisplayLBLNames, lblTime, lblStatusUpdate
 import LabyrinthModule2Function
-import time
 from Tkinter import *
 import sphero_driver
 sphero = sphero_driver.Sphero()
@@ -83,9 +82,11 @@ class GUI:
         self.btnStop.grid(row=10, column=10, columnspan =2, pady = (10,0))
 
         #the label to hold status messages
-        self.lblStatusUpdate = Label(self.frWindow,anchor = W, text=self.status, bg='black', fg='white', width = 80)
-        self.lblStatusUpdate.grid(row = 11,columnspan = 30,sticky = E +W,  pady = (5,0) )
+        lblStatusUpdate[0] = Label(self.frWindow,anchor = W, text=self.status, bg='black', fg='white', width = 80)
+        lblStatusUpdate[0].grid(row = 11,columnspan = 30,sticky = E +W,  pady = (5,0))
 
+        lblStatusExtend = Label(self.frWindow, width = 8,bg = 'black')
+        lblStatusExtend.grid(row=11, column = 16, sticky = W, pady=(5, 0))
 
         """DISPLAY Grid Arrangement:
         4x6
@@ -145,11 +146,6 @@ class GUI:
         self.frWindow.destroy()
         self.master.destroy()
 
-    def fnSetCalibration(self, bearing):
-        globBearing = self.bearingSlider.get()
-        print globBearing
-        pass
-
 # calls the function stop, stops the display and disconnects from Sphero
     def fnStop(self):
         self.stop = True
@@ -170,9 +166,7 @@ class GUI:
 # create the set heading window
     def fnSetHeadingWindow(self):
         # message box to show status
-
-        self.status = 'Connecting to Sphero...'
-        self.lblStatusUpdate.config(text =self.status)
+        lblStatusUpdate[0].config(text ='Connecting to Sphero...')
         self.frWindow.update()
         try:
 
@@ -183,53 +177,64 @@ class GUI:
             sphero.set_filtered_data_strm(40, 1, 0, True)
             # sphero is ready
             sphero.start()
-            self.status = 'Sphero connection successful'
-            self.lblStatusUpdate.config(text=self.status)
+            # notify user of connection success
+            lblStatusUpdate[0].config(text='Sphero connection successful')
+            #update the window to display the status update
             self.frWindow.update()
 
-            setHeadingWindow = Toplevel()
-            setHeadingWindow.wm_title("Set Heading")
+            self.setHeadingWindow = Toplevel()
+            self.setHeadingWindow.wm_title("Set Heading")
 
             # create the widgets to go inside the new window
             # lblInfo contains instructions on how to operate the set heading operation
-            lblInfo = Label(setHeadingWindow, text="Press roll to roll sphero and adjust its bearing using the slider", font = ('Calibri', 12))
+            lblInfo = Label(self.setHeadingWindow, text="Press roll to roll sphero and adjust its bearing using the slider", font = ('Calibri', 12))
             lblInfo.grid(row = 1, column = 1, padx = (10,10), pady = (20,20))
 
             # bearing slider is the entry for the amount of compensation to provide so that the Sphero is
             # facing the correct way.
-            self.bearingSlider = Scale(setHeadingWindow, to=359, orient=HORIZONTAL, command=self.fnSetCalibration, length = 200)
+            self.bearingSlider = Scale(self.setHeadingWindow, to=359, orient=HORIZONTAL, length = 200)
             self.bearingSlider.grid(row=2, column=1, columnspan=4)
 
             # button roll makes the Sphero roll at native bearing zero for one second so that the user can identify
             # how many degrees away from the desired orientation the sphero native is
-            self.btnBearingRoll = Button(setHeadingWindow, text = "Roll", command = lambda :self.fnBearingRoll(self.bearingSlider.get()),font=('Calibri',14))
+            self.btnBearingRoll = Button(self.setHeadingWindow, text = "Roll", command = lambda:
+                self.fnBearingRoll(self.bearingSlider.get()), font=('Calibri',14))
             self.btnBearingRoll.grid(row = 3, column =1, padx=(20,200), pady = (10,10))
 
             # when button continue is pressed, sphero is disconnected, then fnSpheroStart in LabyrinthModule2Function is called
-            self.btnContinue = Button(setHeadingWindow, text="Continue", command=lambda :self.fnContinue(self.bearingSlider.get()), font=('Calibri', 14))
+            self.btnContinue = Button(self.setHeadingWindow, text="Continue", command=lambda :self.fnContinue(self.bearingSlider.get()), font=('Calibri', 14))
             self.btnContinue.grid(row=3, column=1, padx = (200,20), pady = (10,10))
 
-
-
+        # if there is a bluetooth error
         except IOError, AttributeError:
+            # ask user if they would like to attempt the connection again
             attemptAgain = tkMessageBox.askyesno("Sphero Connection", "Connection Failure. Retry Connection?")
-            if attemptAgain is True:
+            if attemptAgain is True: # user would like to attempt again
                 self.fnSetHeadingWindow()
+            else: # user does not want to attempt again
+                # clear status bar; no processes going on
+                lblStatusUpdate[0].config(text = '')
 
 
     def fnBearingRoll(self, bearing):
+        # roll at bearing of slider for 2 seconds
         sphero.roll(50, bearing, 1, True)
         lstDisplayLBLNames[0].after(2000)
-
+        # stop roll
         sphero.roll(0,0,0,True)
 
     def fnContinue(self, bearing):
-        print bearing
+        # disconnect from sphero as bluetooth connection cannot be carried over to another file
+        self.setHeadingWindow.destroy()
         sphero.disconnect()
-        lstDisplayLBLNames[0].after(10000)
-        self.fn.fnSpheroStart(bearing)
 
+        # clear status bar
+        lblStatusUpdate[0].config(text='')
+        self.frWindow.update()
+
+        # call the sphero start function with the argument bearing being the value chosen on the bearing slider
+        # bearing : int,  0-359 degrees
+        self.fn.fnSpheroStart(bearing)
 
 appBasicGUI = GUI(wdBaseWindow)
 wdBaseWindow.mainloop()
-
