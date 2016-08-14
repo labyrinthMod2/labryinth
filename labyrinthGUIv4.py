@@ -86,9 +86,8 @@ class Module1GUI():
         # this is a list of RadioButtons for the user to create the maze
         option = IntVar()
 
-        """self.lbltitle = Label(self.frmWindowOne, text="Select an Option and Press a Cell to Create the Maze", font=("Calibri", 12,"bold" )
-
-                              ,bg="white", fg="black")"""
+        self.lbltitle = Label(self.frmWindowOne, text="Select an Option and Press a Cell to Create the Maze", font=("Calibri", 12,"bold" ),fg="white", bg="black")
+        self.lbltitle.grid(row =0, column = 5, columnspan =8)
 
         self.lblSelect = Label(self.frmWindowOne, text= "Options:", font=("Calibri", 12,"bold" ),bg="white", fg="black")
         self.lblSelect.grid(row =3, column = 1, sticky = W+E+S+N)
@@ -117,7 +116,7 @@ class Module1GUI():
         self.btnSolve.grid(row=10, column=3, sticky =N+S+W+E)
 
 # quit button
-        self.btnQuit = Button(self.frmWindowOne, text=" Quit", font=("Calibri", 12),)
+        self.btnQuit = Button(self.frmWindowOne, text=" Quit", font=("Calibri", 12),command = Lab.fnExit)
         self.btnQuit.grid(row=10, column=13,sticky = E+W+S+N)
 
 
