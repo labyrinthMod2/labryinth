@@ -4,14 +4,11 @@
 
 from Tkinter import *
 
-from PIL import Image, ImageTk
-
 from functools import partial
-
-import tkMessageBox
 
 import labyrinthFunctions
 Lab = labyrinthFunctions.Functions()
+wdBaseWindow = Tk()
 
 from buttonNames import listBtnName
 
@@ -31,39 +28,6 @@ class Module1GUI():
         self.frmWindowOne.pack(fill= BOTH, expand =1)
         self.tlOne.resizable(0,0)
         self.frmWindowOne.grid()
-
-
-
-        #set the default image for the maze
-        self.blank = PhotoImage(file = 'white.gif')
-        size = 55,55
-
-        # transparent photo
-        imTransparent = Image.open("transparent.png")
-        imTransparent.thumbnail(size, Image.ANTIALIAS)
-        photoTransparent = ImageTk.PhotoImage(imTransparent)
-
-        # image of the waypoint
-        imFlag = Image.open("flag.png")
-        imFlag.thumbnail(size, Image.ANTIALIAS)
-        photoFlag = ImageTk.PhotoImage(imTransparent)
-
-        # image of the barriers
-        imBarriers = Image.open("mountain.png")
-        imBarriers.thumbnail(size, Image.ANTIALIAS)
-        photoBarriers = ImageTk.PhotoImage(imBarriers)
-
-        imBackgroud=Image.open("background.gif")
-        imBackgroud.thumbnail(size, Image.ANTIALIAS)
-        photoBackground = ImageTk.PhotoImage(imBackgroud)
-
-
-
-        #background image
-        background_image=PhotoImage(file = 'background.gif')
-        background_label = Label(self.frmWindowOne, image=background_image)
-        background_label.place(x=0, y=0, relwidth=1, relheight=1)
-        background_label.image = background_image
 
 
         # empty labels which are for spacing
@@ -86,8 +50,9 @@ class Module1GUI():
         # this is a list of RadioButtons for the user to create the maze
         option = IntVar()
 
-        self.lbltitle = Label(self.frmWindowOne, text="Select an Option and Press a Cell to Create the Maze", font=("Calibri", 12,"bold" ),fg="white", bg="black")
-        self.lbltitle.grid(row =0, column = 5, columnspan =8)
+        """self.lbltitle = Label(self.frmWindowOne, text="Select an Option and Press a Cell to Create the Maze", font=("Calibri", 12,"bold" )
+
+                              ,bg="white", fg="black")"""
 
         self.lblSelect = Label(self.frmWindowOne, text= "Options:", font=("Calibri", 12,"bold" ),bg="white", fg="black")
         self.lblSelect.grid(row =3, column = 1, sticky = W+E+S+N)
@@ -112,11 +77,11 @@ class Module1GUI():
 
 
 # solve button calls a funtion to find all the possible routes
-        self.btnSolve = Button(self.frmWindowOne, text=" Solve",font=("Calibri", 12), bg ="white", command=labyrinthFunctions.fnSaveMaze)
+        self.btnSolve = Button(self.frmWindowOne, text=" Solve",font=("Calibri", 12), bg ="white", command=self.fnSolve)
         self.btnSolve.grid(row=10, column=3, sticky =N+S+W+E)
 
 # quit button
-        self.btnQuit = Button(self.frmWindowOne, text=" Quit", font=("Calibri", 12),command = Lab.fnExit)
+        self.btnQuit = Button(self.frmWindowOne, text=" Quit", font=("Calibri", 12),)
         self.btnQuit.grid(row=10, column=13,sticky = E+W+S+N)
 
 
@@ -147,6 +112,16 @@ class Module1GUI():
         
         
         self.frmWindowOne.update()
+
+    def fnSolve(self):
+        labyrinthFunctions.fnSaveMaze()
+        self.btnQuit.after(5000)
+        wdBaseWindow.destroy()
+        import LabyrinthModule2GUI
+
+
+
+
     
         
     def __init__(self, master=None):
@@ -154,15 +129,10 @@ class Module1GUI():
         master.withdraw()
 
         
-        self.displayWindowOne()    
+        self.displayWindowOne()
 
         master.mainloop()
 
 
-        
-
-        
-
-wdBaseWindow = Tk()
 appBasicGUI = Module1GUI(wdBaseWindow)
 wdBaseWindow.mainloop()

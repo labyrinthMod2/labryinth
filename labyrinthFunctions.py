@@ -397,7 +397,6 @@ def fnWayPointsIndex( listWayPointsIndex, listWayPoints):
 
     # this fucntion saves the maze and the shortest paths to a XML file
 def fnSaveToXml(xmlFile):
-
         rootName = Element("Labyrinth_Maze")
         for cell in f.listMaze1d:
             cellElement = SubElement(rootName, "cell")
@@ -454,7 +453,7 @@ def fnSolveMaze(listWayPointsIndex, listValidGrids, listBarriers, listWayPoints)
 
         # grid numbers which are integers
         gridnum = []
-        for num in range(1,141):
+        for num in range(0,140):
             grid.append(str(num))
             gridnum.append(num)
             #print grid

@@ -5,11 +5,12 @@
 # contains display and small display related functions
 
 from displayNames import lstDisplayLBLNames, lblTime, lblStatusUpdate
-import LabyrinthModule2Function
 from Tkinter import *
 import sphero_driver
-sphero = sphero_driver.Sphero()
 import tkMessageBox
+import LabyrinthModule2Function
+
+sphero = sphero_driver.Sphero()
 wdBaseWindow = Tk()
 
 
@@ -26,8 +27,6 @@ class GUI:
         self.status = StringVar()
         self.fnCreateWidgets()
 
-
-
     def fnCreateWidgets(self):
 
         self.status = ''
@@ -39,14 +38,8 @@ class GUI:
         font = 'Calibri'
 
         # create the frame
-        self.frWindow = Frame(height=400, width=500)
+        self.frWindow = Frame(height=400, width=500,bg ="#b3c9d1")
         self.frWindow.pack(fill=BOTH, expand=1)
-
-        #background image
-        background_image=PhotoImage(file = 'background.gif')
-        background_label = Label(self.frWindow, image=background_image)
-        background_label.place(x=0, y=0, relwidth=1, relheight=1)
-        background_label.image = background_image
 
         #menu bar
         menubar = Menu(self.master)
@@ -82,10 +75,10 @@ class GUI:
         self.btnStop.grid(row=10, column=10, columnspan =2, pady = (10,0))
 
         #the label to hold status messages
-        lblStatusUpdate[0] = Label(self.frWindow,anchor = W, text=self.status, bg='black', fg='white', width = 80)
+        lblStatusUpdate[0] = Label(self.frWindow,anchor = W, text=self.status, bg='white', fg='black', width = 80)
         lblStatusUpdate[0].grid(row = 11,columnspan = 30,sticky = E +W,  pady = (5,0))
 
-        lblStatusExtend = Label(self.frWindow, width = 8,bg = 'black')
+        lblStatusExtend = Label(self.frWindow, width = 8,bg = 'white')
         lblStatusExtend.grid(row=11, column = 16, sticky = W, pady=(5, 0))
 
         """DISPLAY Grid Arrangement:
@@ -169,8 +162,6 @@ class GUI:
         lblStatusUpdate[0].config(text ='Connecting to Sphero...')
         self.frWindow.update()
         try:
-
-
             # bluetooth sphero connection is activated
             sphero.connect()
             # raw values set
@@ -206,7 +197,7 @@ class GUI:
             self.btnContinue.grid(row=3, column=1, padx = (200,20), pady = (10,10))
 
         # if there is a bluetooth error
-        except IOError, AttributeError:
+        except (IOError, RuntimeError, AttributeError):
             # ask user if they would like to attempt the connection again
             attemptAgain = tkMessageBox.askyesno("Sphero Connection", "Connection Failure. Retry Connection?")
             if attemptAgain is True: # user would like to attempt again
@@ -214,7 +205,6 @@ class GUI:
             else: # user does not want to attempt again
                 # clear status bar; no processes going on
                 lblStatusUpdate[0].config(text = '')
-
 
     def fnBearingRoll(self, bearing):
         # roll at bearing of slider for 2 seconds

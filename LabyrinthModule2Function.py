@@ -13,7 +13,6 @@ import tkMessageBox
 
 sphero = sphero_driver.Sphero()
 
-
 class Functions:
     def __init__(self):
         self.arrMaze = []
@@ -28,9 +27,11 @@ class Functions:
         index = 0
         # because the maze array in the xml file has barriers, these need to be removed
         # to format the array for display
+        xs = []
         for each in tree.findall('cell'):
             index += 1
-            print 'bare', each.text
+            if each.text == 'x':
+                xs.append(index)
             # the first row is not used
             if index < 15:
                 continue
@@ -46,30 +47,31 @@ class Functions:
             # the actual grids are placed in the arrMaze array
             else:
                 self.arrMaze.append(each.text)
-
+            print xs
         # bestRoute is gathered from the xml file
         for eachRoute in tree.findall('route'):
             for eachCell in eachRoute.findall('grid'):
-                eachCell = int(eachCell.text)
+                eachCell = int(eachCell.text) + 1
+
                 # in the xml file, barriers are included in the grid size,
                 #  so instead of a 8*12 grid, it becomes a 14*10 grid
                 # to overcome this, the magnitude of the grid needs to be lowered according to position in the maze
-                if eachCell < 27:
-                    eachCell -= 14
-                elif eachCell < 41:
-                    eachCell -= 16
-                elif eachCell < 55:
-                    eachCell -= 18
-                elif eachCell < 69:
-                    eachCell -= 20
-                elif eachCell < 83:
-                    eachCell -= 22
-                elif eachCell < 97:
-                    eachCell -= 24
-                elif eachCell < 111:
-                    eachCell -= 26
-                elif eachCell < 125:
-                    eachCell -= 28
+                if eachCell < 28:
+                    eachCell -= 15
+                elif eachCell < 42:
+                    eachCell -= 17
+                elif eachCell < 56:
+                    eachCell -= 19
+                elif eachCell < 70:
+                    eachCell -= 21
+                elif eachCell < 84:
+                    eachCell -= 23
+                elif eachCell < 98:
+                    eachCell -= 25
+                elif eachCell < 112:
+                    eachCell -= 27
+                elif eachCell < 126:
+                    eachCell -= 30
                 self.bestRoute.append(eachCell)
 
         # some of the grid values in the xml path may be repeated due to individual paths being
@@ -105,14 +107,14 @@ class Functions:
         self.blank = PhotoImage(file='blank.gif')
 
         # display is updated with obstacles
-        try:
-            for i in range(96):
-                if self.arrMaze[i] == 'x':
-                    lstDisplayLBLNames[i].config(image=self.obs)
-                    lstDisplayLBLNames[i].image = self.obs
-        except IndexError: # arrMaze is empty
-            tkMessageBox.showerror("Error", "The grid seems to be empty, please try again")
 
+        for i in range(96):
+            if self.arrMaze[i] == 'x':
+                print i
+                lstDisplayLBLNames[i].config(image=self.obs)
+                lstDisplayLBLNames[i].image = self.obs
+
+        print self.bestRoute
         try:
             # the first grid picture is set - start point
             lstDisplayLBLNames[self.bestRoute[0] - 1].config(image=self.start)
@@ -150,7 +152,7 @@ class Functions:
             self.startTime = time.time()
 
         # in case of bluetooth connection to sphero failure
-        except IOError, AttributeError:
+        except (IOError, RuntimeError, AttributeError):
             # ask user if they would like to attempt the connection again
             attemptAgain = tkMessageBox.askyesno("Sphero Connection", "Connection Failure. Retry Connection?")
             if attemptAgain is True:  # user would like to attempt again
@@ -239,7 +241,7 @@ class Functions:
             sphero.disconnect()
             # update status
             lblStatusUpdate[0].config(text='Sphero Disconnected')
-        except AttributeError:
+        except (IOError, RuntimeError, AttributeError):
             lblStatusUpdate[0].config(text='')
 
         # clear time elapsed label
