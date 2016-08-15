@@ -27,11 +27,8 @@ class Functions:
         index = 0
         # because the maze array in the xml file has barriers, these need to be removed
         # to format the array for display
-        xs = []
         for each in tree.findall('cell'):
             index += 1
-            if each.text == 'x':
-                xs.append(index)
             # the first row is not used
             if index < 15:
                 continue
@@ -47,7 +44,6 @@ class Functions:
             # the actual grids are placed in the arrMaze array
             else:
                 self.arrMaze.append(each.text)
-            print xs
         # bestRoute is gathered from the xml file
         for eachRoute in tree.findall('route'):
             for eachCell in eachRoute.findall('grid'):
@@ -94,7 +90,7 @@ class Functions:
 
         # how long it takes to cross one (12*8) grid in milliseconds at sphero speed 50 when added to the wait time
         # of the start function
-        self.timeOneGrid = 500
+        self.timeOneGrid = 600
         #
         self.obs = PhotoImage(file='obs.gif')
         self.leftUp = PhotoImage(file="left_up.gif")
@@ -168,9 +164,6 @@ class Functions:
         # this loops through each grid in bestRoute as determines where to direct sphero
         # then it calls the update display function to represent the route as it is occurring
         for eachStep in self.bestRoute:
-            #################################################
-            #lstDisplayLBLNames[0].after(600) i dont remember why this is here but it could be important
-            ######################################################
             # if stop has been pressed, display ceases updating
             if self.stop == True:
                 break
@@ -217,6 +210,13 @@ class Functions:
             index += 1
 
     # stops the movement of the sphero
+    # input: button 'stop' pressed in interface
+    # output: if sphero control mode:
+    #         - movement of sphero stops
+    #         - sphero disconnects via bluetooth
+    #         - display is wiped ecept for obstacles and start point + time elapsed cleared
+    #        if simulation mode:
+    #       - display is wiped ecept for obstacles and start point + time elapsed cleared
     def fnSpheroStop(self):
         # clears the display of route
         for eachGrid in self.bestRoute:
@@ -248,6 +248,9 @@ class Functions:
         lblTime[0].config(text = "00:00")
 
 # in simulation mode, only display logic is called as there is no control of sphero
+# input: button 'start' pressed while mode selected is 'simulation'
+# output: self.index : index of interation in route
+#         self.eachStep : actual cell value of iteration in route
     def fnUpdateDisplay(self):
 
         # set stop to false

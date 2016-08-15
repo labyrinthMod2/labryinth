@@ -146,7 +146,8 @@ class GUI:
 
 # when return is selected in menubar, the window closes and module 1 is opened
     def fnReturnModule1(self):
-        pass
+        wdBaseWindow.destroy()
+        import labyrinthGUIv4
 
     def fnStart(self):
         # calls a different function depending on the mode selected

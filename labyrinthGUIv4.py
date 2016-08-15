@@ -31,19 +31,19 @@ class Module1GUI():
 
 
         # empty labels which are for spacing
-        self.lblEmpty1 = Label(self.frmWindowOne, bg ="black")
+        self.lblEmpty1 = Label(self.frmWindowOne, bg ="#b3c9d1")
         self.lblEmpty1.grid(row =0)
 
-        self.lblEmpty5 = Label(self.frmWindowOne, bg="black" )
+        self.lblEmpty5 = Label(self.frmWindowOne, bg="#b3c9d1" )
         self.lblEmpty5.grid(row =6)
 
-        self.lblEmpty2 = Label(self.frmWindowOne, bg="black", width = 2,)
+        self.lblEmpty2 = Label(self.frmWindowOne, bg="#b3c9d1", width = 2,)
         self.lblEmpty2.grid(column = 0)
 
-        self.lblEmpty3 = Label(self.frmWindowOne, width = 2, bg= "black")
+        self.lblEmpty3 = Label(self.frmWindowOne, width = 2, bg= "#b3c9d1")
         self.lblEmpty3.grid(column = 1)
 
-        self.lblEmpty4 = Label(self.frmWindowOne, width = 2, bg ="black")
+        self.lblEmpty4 = Label(self.frmWindowOne, width = 2, bg ="#b3c9d1")
         self.lblEmpty4.grid(column = 14, row =6)
 
 
@@ -115,7 +115,7 @@ class Module1GUI():
 
     def fnSolve(self):
         labyrinthFunctions.fnSaveMaze()
-        self.btnQuit.after(5000)
+        self.btnQuit.after(2000)
         wdBaseWindow.destroy()
         import LabyrinthModule2GUI
 
