@@ -4,11 +4,14 @@
 
 from Tkinter import *
 
+# from PIL import Image, ImageTk
+
 from functools import partial
+
+import tkMessageBox
 
 import labyrinthFunctions
 Lab = labyrinthFunctions.Functions()
-wdBaseWindow = Tk()
 
 from buttonNames import listBtnName
 
@@ -30,29 +33,61 @@ class Module1GUI():
         self.frmWindowOne.grid()
 
 
+
+        #set the default image for the maze
+        self.blank = PhotoImage(file = 'white.gif')
+        size = 55,55
+
+        # transparent photo
+        """imTransparent = Image.open("transparent.png")
+        imTransparent.thumbnail(size, Image.ANTIALIAS)
+        photoTransparent = ImageTk.PhotoImage(imTransparent)
+
+        # image of the waypoint
+        imFlag = Image.open("flag.png")
+        imFlag.thumbnail(size, Image.ANTIALIAS)
+        photoFlag = ImageTk.PhotoImage(imTransparent)
+
+        # image of the barriers
+        imBarriers = Image.open("mountain.png")
+        imBarriers.thumbnail(size, Image.ANTIALIAS)
+        photoBarriers = ImageTk.PhotoImage(imBarriers)
+
+        imBackgroud=Image.open("background.gif")
+        imBackgroud.thumbnail(size, Image.ANTIALIAS)
+        photoBackground = ImageTk.PhotoImage(imBackgroud)"""
+
+
+
+        #background image
+        background_image=PhotoImage(file = 'background.gif')
+        background_label = Label(self.frmWindowOne, image=background_image)
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
+        background_label.image = background_image
+
+
         # empty labels which are for spacing
-        self.lblEmpty1 = Label(self.frmWindowOne, bg ="#b3c9d1")
+        self.lblEmpty1 = Label(self.frmWindowOne, bg ="black")
         self.lblEmpty1.grid(row =0)
 
-        self.lblEmpty5 = Label(self.frmWindowOne, bg="#b3c9d1" )
+        self.lblEmpty5 = Label(self.frmWindowOne, bg="black" )
         self.lblEmpty5.grid(row =6)
 
-        self.lblEmpty2 = Label(self.frmWindowOne, bg="#b3c9d1", width = 2,)
+        self.lblEmpty2 = Label(self.frmWindowOne, bg="black", width = 2,)
         self.lblEmpty2.grid(column = 0)
 
-        self.lblEmpty3 = Label(self.frmWindowOne, width = 2, bg= "#b3c9d1")
+        self.lblEmpty3 = Label(self.frmWindowOne, width = 2, bg= "black")
         self.lblEmpty3.grid(column = 1)
 
-        self.lblEmpty4 = Label(self.frmWindowOne, width = 2, bg ="#b3c9d1")
+        self.lblEmpty4 = Label(self.frmWindowOne, width = 2, bg ="black")
         self.lblEmpty4.grid(column = 14, row =6)
 
 
         # this is a list of RadioButtons for the user to create the maze
         option = IntVar()
 
-        """self.lbltitle = Label(self.frmWindowOne, text="Select an Option and Press a Cell to Create the Maze", font=("Calibri", 12,"bold" )
-
-                              ,bg="white", fg="black")"""
+        self.lbltitle = Label(self.frmWindowOne, text="Select an Option and Press a Cell to Create the Maze", font=("Calibri", 12,"bold" ),fg="white", bg="black")
+        self.lbltitle.grid(row =0, column = 5, columnspan =8)
 
         self.lblSelect = Label(self.frmWindowOne, text= "Options:", font=("Calibri", 12,"bold" ),bg="white", fg="black")
         self.lblSelect.grid(row =3, column = 1, sticky = W+E+S+N)
@@ -60,28 +95,28 @@ class Module1GUI():
         self.rbAddWayPoints =Radiobutton(self.frmWindowOne, text="Add Waypoints", variable=option, value=1, font=("Calibri", 12), indicatoron=0,command=Lab.fnAddWaypoints )
         self.rbAddWayPoints.grid(row =4, column =1, sticky = W+E+S+N)
 
-        self.rbDeleteWayPoints= Radiobutton(self.frmWindowOne, text="Delete Waypoints", variable=option, value=2, font=("Calibri", 12,), indicatoron=0, command= Lab.fnDeleteWayPoint)
-        self.rbDeleteWayPoints.grid(row =5, column =1, sticky = W+E+S+N)
 
         self.rbAddBarriers= Radiobutton(self.frmWindowOne, text="Add Barriers", variable=option, value=3, font=("Calibri", 12, ), indicatoron=0,command= Lab.fnAddBarriers)
-        self.rbAddBarriers.grid(row =6, column =1, sticky = W+E+S+N)
+        self.rbAddBarriers.grid(row =5, column =1, sticky = W+E+S+N)
 
         self.rbDeleteBarriers= Radiobutton(self.frmWindowOne, text="Delete Barriers", variable=option, value=4, font=("Calibri", 12, ), indicatoron=0, command= Lab.fnDeleteBarriers)
-        self.rbDeleteBarriers.grid(row =7, column =1, sticky = W+E+S+N)
+        self.rbDeleteBarriers.grid(row =6, column =1, sticky = W+E+S+N)
 
 
+        self.btnDeleteWayPoints= Button(self.frmWindowOne, text="Delete All Waypoints", font=("Calibri", 12,), command= Lab.fnDeleteWayPoint)
+        self.btnDeleteWayPoints.grid(row =8, column =1, sticky = W+E+S+N)
 
         self.btnReset= Button(self.frmWindowOne, text="Reset Maze", font=("Calibri", 12, ), command= Lab.fnResetMaze)
-        self.btnReset.grid(row =8, column =1, sticky = W+E+S+N)
+        self.btnReset.grid(row =9, column =1, sticky = W+E+S+N)
 
 
 
 # solve button calls a funtion to find all the possible routes
-        self.btnSolve = Button(self.frmWindowOne, text=" Solve",font=("Calibri", 12), bg ="white", command=self.fnSolve)
+        self.btnSolve = Button(self.frmWindowOne, text=" Solve",font=("Calibri", 12), bg ="white", command=labyrinthFunctions.fnSaveMaze)
         self.btnSolve.grid(row=10, column=3, sticky =N+S+W+E)
 
 # quit button
-        self.btnQuit = Button(self.frmWindowOne, text=" Quit", font=("Calibri", 12),)
+        self.btnQuit = Button(self.frmWindowOne, text=" Quit", font=("Calibri", 12),command = Lab.fnExit)
         self.btnQuit.grid(row=10, column=13,sticky = E+W+S+N)
 
 
@@ -112,16 +147,6 @@ class Module1GUI():
         
         
         self.frmWindowOne.update()
-
-    def fnSolve(self):
-        labyrinthFunctions.fnSaveMaze()
-        self.btnQuit.after(2000)
-        wdBaseWindow.destroy()
-        import LabyrinthModule2GUI
-
-
-
-
     
         
     def __init__(self, master=None):
@@ -129,10 +154,15 @@ class Module1GUI():
         master.withdraw()
 
         
-        self.displayWindowOne()
+        self.displayWindowOne()    
 
         master.mainloop()
 
 
+        
+
+        
+
+wdBaseWindow = Tk()
 appBasicGUI = Module1GUI(wdBaseWindow)
 wdBaseWindow.mainloop()
